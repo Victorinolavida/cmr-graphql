@@ -88,7 +88,7 @@ const resolvers = {
       try {
         const { id } = ctx;
 
-        console.log(id)
+
 
         const clients = await Client.find({ vendedor: id })
 
@@ -119,56 +119,10 @@ const resolvers = {
     }
   },
   Mutation: {
-    newUser: async (_, { input }) => {
+    getUser: async (_, { token }, ctx) => {
+      const userID = await jwt.verify(token, process.env.KEY_WORD)
 
-      const { email, password } = input;
-
-      //exister user
-      const existUser = await Usuario.findOne({ email })
-
-      if (existUser) {
-        throw new Error('El usuario ya esta registado')
-      }
-
-      //hahear el password
-      const salt = await bcrypjs.genSalt(10);
-      input.password = await bcrypjs.hash(password, salt)
-
-      //guardndo en db
-      try {
-        const usuario = new Usuario(input);
-        await usuario.save()
-        return usuario;
-      } catch (error) {
-        console.log(error)
-      }
-
-
-    },
-    authUser: async (_, { input }) => {
-      const { email, password } = input
-
-      //si el usuario existe
-
-      const existUser = await Usuario.findOne({ email })
-
-
-      if (!existUser) {
-        throw new Error('el usuario No existe')
-      }
-
-      //validar password
-
-      const passwordRight = bcrypjs.compare(password, existUser.password)
-
-      if (!passwordRight) {
-        throw new Error('password incorrecto')
-      }
-
-      return {
-        token: generateJWT(existUser, process.env.KEY_WORD, '24h')
-      }
-
+      return userID
     },
     newProduct: async (_, { input }) => {
       try {
